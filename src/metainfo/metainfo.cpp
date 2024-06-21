@@ -14,8 +14,9 @@
 MetaInfo::MetaInfo(std::filesystem::path torrent_file)
 {
     std::string encoded_value = this->read_file(torrent_file);
+    auto it = encoded_value.begin();
     Decode decode = Decode();
-    json info = decode.decode_bencoded_value(encoded_value);
+    json info = decode.decode_bencoded_value(encoded_value, it);
     this->announceURL = info["announce"];
     this->file_size = info["info"]["length"];
     this->name = info["info"]["name"];
@@ -41,14 +42,6 @@ std::string MetaInfo::read_file(std::filesystem::path torrent_file)
     buffer << file.rdbuf();
     std::string encoded_value = buffer.str();
     file.close();
-
-    // normalize the string characters
-    size_t pos = 0;
-    while ((pos = encoded_value.find("\r\n", pos)) != std::string::npos)
-    {
-        encoded_value.replace(pos, 2, "\n");
-        pos += 1; // Move past the newly inserted character
-    }
 
     return encoded_value;
 }

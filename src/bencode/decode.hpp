@@ -9,34 +9,24 @@ class Decode
 {
 
 private:
-    EncodedValueType get_encoded_value_type(const std::string &encoded_value);
+    EncodedValueType get_encoded_value_type(std::string::const_iterator &it);
 
-    bool is_integer(const std::string &encoded_value);
+    bool is_integer(std::string::const_iterator &it);
 
-    bool is_string(const std::string &encoded_value);
+    bool is_string(std::string::const_iterator &it);
 
-    bool is_list(const std::string &encoded_value);
+    bool is_list(std::string::const_iterator &it);
 
-    bool is_dict(const std::string &encoded_value);
+    bool is_dict(std::string::const_iterator &it);
 
-    std::string get_string_value(const std::string &encoded_value, size_t &index);
+    json decode_integer(const std::string &encoded_value, std::string::const_iterator &it);
 
-    std::string get_integer_value(const std::string &encoded_value, size_t &index);
+    json decode_string(const std::string &encoded_value, std::string::const_iterator &it);
 
-    std::string get_list_or_dict_value(const std::string &encoded_value, size_t &index);
+    json decode_list(const std::string &encoded_value, std::string::const_iterator &it);
 
-    json get_nested_element(const std::string &encoded_value, size_t &index);
-
-    json decode_integer(const std::string &encoded_value);
-
-    json decode_string(const std::string &encoded_value);
-
-    json decode_list(const std::string &encoded_value);
-
-    json decode_dict(const std::string &encoded_value);
-
-    size_t get_char_count(const std::string &str, size_t bytes_count);
+    json decode_dict(const std::string &encoded_value, std::string::const_iterator &it);
 
 public:
-    json decode_bencoded_value(const std::string &encoded_value);
+    json decode_bencoded_value(const std::string &encoded_value, std::string::const_iterator &it);
 };

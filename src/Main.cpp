@@ -30,8 +30,9 @@ int decode_command(int argc, char *argv[])
 
     try
     {
+        auto it = encoded_value.begin();
         Decode decode = Decode();
-        std::cout << decode.decode_bencoded_value(encoded_value).dump() << std::endl;
+        std::cout << decode.decode_bencoded_value(encoded_value, it).dump() << std::endl;
     }
     catch (const std::exception &e)
     {
