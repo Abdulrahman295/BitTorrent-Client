@@ -9,6 +9,12 @@
 
 using json = nlohmann::json;
 
+/**
+ * @brief  Decodes the bencoded value based on the type of the value
+ *
+ * @param encoded_value
+ * @return json
+ */
 json Decode::decode_bencoded_value(const std::string &encoded_value)
 {
     EncodedValueType type = this->get_encoded_value_type(encoded_value);
@@ -32,6 +38,12 @@ json Decode::decode_bencoded_value(const std::string &encoded_value)
     }
 }
 
+/**
+ * @brief Returns the type of the encoded value
+ *
+ * @param encoded_value
+ * @return EncodedValueType
+ */
 EncodedValueType Decode::get_encoded_value_type(const std::string &encoded_value)
 {
     if (this->is_integer(encoded_value))
@@ -56,26 +68,61 @@ EncodedValueType Decode::get_encoded_value_type(const std::string &encoded_value
     }
 }
 
+/**
+ * @brief returns true if the encoded value is an integer
+ *
+ * @param encoded_value
+ * @return true
+ * @return false
+ */
 bool Decode::is_integer(const std::string &encoded_value)
 {
     return encoded_value[0] == 'i';
 }
 
+/**
+ * @brief returns true if the encoded value is a string
+ *
+ * @param encoded_value
+ * @return true
+ * @return false
+ */
 bool Decode::is_string(const std::string &encoded_value)
 {
     return std::isdigit(encoded_value[0]);
 }
 
+/**
+ * @brief returns true if the encoded value is a list
+ *
+ * @param encoded_value
+ * @return true
+ * @return false
+ */
 bool Decode::is_list(const std::string &encoded_value)
 {
     return encoded_value[0] == 'l';
 }
 
+/**
+ * @brief returns true if the encoded value is a dict
+ *
+ * @param encoded_value
+ * @return true
+ * @return false
+ */
 bool Decode::is_dict(const std::string &encoded_value)
 {
     return encoded_value[0] == 'd';
 }
 
+/**
+ * @brief return the bencoded string value in the format (size:characters) from a sequence of characters
+ *
+ * @param encoded_value
+ * @param index
+ * @return std::string
+ */
 std::string Decode::get_string_value(const std::string &encoded_value, size_t &index)
 {
     size_t colon_index = encoded_value.find(':', index);
@@ -87,11 +134,19 @@ std::string Decode::get_string_value(const std::string &encoded_value, size_t &i
 
     std::string number_string = encoded_value.substr(index, colon_index - index);
     int64_t number = std::atoll(number_string.c_str());
-    std::string value = number_string + encoded_value.substr(colon_index, number + 1);
-    index = colon_index + number;
+    size_t char_count = this->get_char_count(encoded_value.substr(colon_index + 1), number);
+    std::string value = number_string + encoded_value.substr(colon_index, char_count + 1);
+    index = colon_index + char_count;
     return value;
 }
 
+/**
+ * @brief return the bencoded integer value in the format (i<number>e) from a sequence of characters
+ *
+ * @param encoded_value
+ * @param index
+ * @return std::string
+ */
 std::string Decode::get_integer_value(const std::string &encoded_value, size_t &index)
 {
     size_t end = encoded_value.find('e', index);
@@ -104,6 +159,13 @@ std::string Decode::get_integer_value(const std::string &encoded_value, size_t &
     return value;
 }
 
+/**
+ * @brief return the bencoded list or dict value in the format (l<value>e or d<value>e) from a sequence of characters
+ *
+ * @param encoded_value
+ * @param index
+ * @return std::string
+ */
 std::string Decode::get_list_or_dict_value(const std::string &encoded_value, size_t &index)
 {
     std::stack<char> stack;
@@ -123,7 +185,8 @@ std::string Decode::get_list_or_dict_value(const std::string &encoded_value, siz
 
             std::string number_string = encoded_value.substr(j, colon_index - j);
             int64_t number = std::atoll(number_string.c_str());
-            j = colon_index + number;
+            size_t char_count = this->get_char_count(encoded_value.substr(colon_index + 1), number);
+            j = colon_index + char_count;
         }
         else if (encoded_value[j] == 'i')
         {
@@ -157,7 +220,13 @@ std::string Decode::get_list_or_dict_value(const std::string &encoded_value, siz
 
     return value;
 }
-
+/**
+ * @brief returns the json object of individual nested elements inside a list or dict
+ *
+ * @param encoded_value
+ * @param index
+ * @return json
+ */
 json Decode::get_nested_element(const std::string &encoded_value, size_t &index)
 {
     std::string value = "";
@@ -181,6 +250,12 @@ json Decode::get_nested_element(const std::string &encoded_value, size_t &index)
     return this->decode_bencoded_value(value);
 }
 
+/**
+ * @brief returns the json object of an integer value
+ *
+ * @param encoded_value
+ * @return json
+ */
 json Decode::decode_integer(const std::string &encoded_value)
 {
     if (encoded_value[0] != 'i' || encoded_value[encoded_value.size() - 1] != 'e')
@@ -220,6 +295,12 @@ json Decode::decode_integer(const std::string &encoded_value)
     return json(number);
 }
 
+/**
+ * @brief returns the json object of a string value
+ *
+ * @param encoded_value
+ * @return json
+ */
 json Decode::decode_string(const std::string &encoded_value)
 {
     size_t colon_index = encoded_value.find(':');
@@ -237,7 +318,9 @@ json Decode::decode_string(const std::string &encoded_value)
         throw std::runtime_error("Number must be greater than or equal to 0 -> " + encoded_value);
     }
 
-    if (encoded_value.size() - colon_index - 1 != number)
+    size_t char_count = this->get_char_count(encoded_value.substr(colon_index + 1), number);
+
+    if (encoded_value.size() - colon_index - 1 != char_count)
     {
         throw std::runtime_error("Number of characters does not match the size -> " + encoded_value);
     }
@@ -246,6 +329,12 @@ json Decode::decode_string(const std::string &encoded_value)
     return json(str);
 }
 
+/**
+ * @brief returns the json object of a list value
+ *
+ * @param encoded_value
+ * @return json
+ */
 json Decode::decode_list(const std::string &encoded_value)
 {
     if (encoded_value[0] != 'l' || encoded_value[encoded_value.size() - 1] != 'e')
@@ -268,6 +357,12 @@ json Decode::decode_list(const std::string &encoded_value)
     return json(list);
 }
 
+/**
+ * @brief returns the json object of a dict value
+ *
+ * @param encoded_value
+ * @return json
+ */
 json Decode::decode_dict(const std::string &encoded_value)
 {
     if (encoded_value[0] != 'd' || encoded_value[encoded_value.size() - 1] != 'e')
@@ -304,4 +399,31 @@ json Decode::decode_dict(const std::string &encoded_value)
     }
 
     return json(dict);
+}
+
+/**
+ * @brief returns the number of characters in a string value based on the number of bytes handles non Ascii characters
+ *
+ * @param str
+ * @param bytes_count
+ * @return size_t
+ */
+size_t Decode::get_char_count(const std::string &str, size_t bytes_count)
+{
+    size_t current_bytes_count = 0;
+    size_t char_count = 0;
+
+    for (size_t i = 0; i < str.size() && current_bytes_count < bytes_count; ++i)
+    {
+
+        // if it marks the start of a byte sequence in UTF-8, increment the current_bytes_count
+        if ((str[i] & 0xC0) != 0x80)
+        {
+            ++current_bytes_count;
+        }
+
+        ++char_count;
+    }
+
+    return char_count + bytes_count - current_bytes_count;
 }

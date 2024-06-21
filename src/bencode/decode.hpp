@@ -7,6 +7,7 @@ using json = nlohmann::json;
 
 class Decode
 {
+
 private:
     EncodedValueType get_encoded_value_type(const std::string &encoded_value);
 
@@ -33,6 +34,8 @@ private:
     json decode_list(const std::string &encoded_value);
 
     json decode_dict(const std::string &encoded_value);
+
+    size_t get_char_count(const std::string &str, size_t bytes_count);
 
 public:
     json decode_bencoded_value(const std::string &encoded_value);
