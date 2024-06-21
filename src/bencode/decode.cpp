@@ -15,6 +15,11 @@ using json = nlohmann::json;
  * @param encoded_value
  * @return json
  */
+json Decode::decode_bencoded_value(const std::string &encoded_value){
+    auto it = encoded_value.begin();
+    return this->decode_bencoded_value(encoded_value, it);
+}
+
 json Decode::decode_bencoded_value(const std::string &encoded_value, std::string::const_iterator &it)
 {
     EncodedValueType type = this->get_encoded_value_type(it);

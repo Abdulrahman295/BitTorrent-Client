@@ -14,9 +14,8 @@
 MetaInfo::MetaInfo(std::filesystem::path torrent_file)
 {
     std::string encoded_value = this->read_file(torrent_file);
-    auto it = encoded_value.begin();
     Decode decode = Decode();
-    json info = decode.decode_bencoded_value(encoded_value, it);
+    json info = decode.decode_bencoded_value(encoded_value);
     this->announceURL = info["announce"];
     this->file_size = info["info"]["length"];
     this->name = info["info"]["name"];
