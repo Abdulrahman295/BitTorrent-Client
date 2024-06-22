@@ -34,4 +34,6 @@ public:
     json to_json();
 
     std::string get_info_hash();
+
+    std::string stringToHex(const std::string &input);
 };

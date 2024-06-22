@@ -66,6 +66,9 @@ int info_command(int argc, char *argv[])
         std::cout << "Tracker URL: " << meta_info.get_announceURL() << std::endl;
         std::cout << "Length: " << meta_info.get_file_size() << std::endl;
         std::cout << "Info Hash: " << meta_info.get_info_hash() << std::endl;
+        std::cout << "Piece Length: " << meta_info.get_piece_length() << std::endl;
+        std::cout << "Piece Hashes: \n"
+                  << meta_info.get_pieces_hash() << std::endl;
     }
     catch (const std::exception &e)
     {

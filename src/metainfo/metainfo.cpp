@@ -88,13 +88,41 @@ size_t MetaInfo::get_piece_length()
 }
 
 /**
- * @brief returns the pieces hash string
+ * @brief converts a string to its hexadecimal representation
+ *
+ * @param input
+ * @return std::string
+ */
+std::string MetaInfo::stringToHex(const std::string &input)
+{
+    std::stringstream hex_stream;
+    hex_stream << std::hex << std::setfill('0');
+
+    for (size_t i = 0; i < input.length(); ++i)
+    {
+        hex_stream << std::setw(2) << static_cast<unsigned int>(static_cast<unsigned char>(input[i]));
+    }
+
+    return hex_stream.str();
+}
+
+/**
+ * @brief returns the pieces hash string in the hexademical format
  *
  * @return std::string
  */
 std::string MetaInfo::get_pieces_hash()
 {
-    return this->pieces_hash;
+    std::string result = "";
+    auto it = this->pieces_hash.begin();
+
+    while (it != this->pieces_hash.end())
+    {
+        result += this->stringToHex(std::string(it, it + 20)) + "\n";
+        it += 20;
+    }
+
+    return result;
 }
 
 /**
