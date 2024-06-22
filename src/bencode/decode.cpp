@@ -3,7 +3,6 @@
 #include <vector>
 #include <cctype>
 #include <cstdlib>
-#include <stack>
 
 #include "decode.hpp"
 
@@ -15,7 +14,8 @@ using json = nlohmann::json;
  * @param encoded_value
  * @return json
  */
-json Decode::decode_bencoded_value(const std::string &encoded_value){
+json Decode::decode_bencoded_value(const std::string &encoded_value)
+{
     auto it = encoded_value.begin();
     return this->decode_bencoded_value(encoded_value, it);
 }

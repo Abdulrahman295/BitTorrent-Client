@@ -7,6 +7,7 @@
 #include "lib/nlohmann/json.hpp"
 
 #include "bencode/decode.hpp"
+#include "bencode/encode.hpp"
 #include "metainfo/metainfo.hpp"
 
 using json = nlohmann::json;
@@ -30,8 +31,9 @@ int decode_command(int argc, char *argv[])
 
     try
     {
-        Decode decode = Decode();
-        std::cout << decode.decode_bencoded_value(encoded_value).dump() << std::endl;
+        // Decode decode = Decode();
+        // std::cout << decode.decode_bencoded_value(encoded_value).dump() << std::endl;
+        Encode encode = Encode();
     }
     catch (const std::exception &e)
     {
@@ -64,6 +66,7 @@ int info_command(int argc, char *argv[])
         MetaInfo meta_info = MetaInfo(torrent_file);
         std::cout << "Tracker URL: " << meta_info.get_announceURL() << std::endl;
         std::cout << "Length: " << meta_info.get_file_size() << std::endl;
+        std::cout << "Info Hash: " << meta_info.get_info_hash() << std::endl;
     }
     catch (const std::exception &e)
     {

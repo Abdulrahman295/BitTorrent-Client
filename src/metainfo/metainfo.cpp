@@ -10,17 +10,19 @@
 
 #include "metainfo.hpp"
 #include "../bencode/decode.hpp"
+#include "../bencode/encode.hpp"
+#include "sha1.hpp"
 
 MetaInfo::MetaInfo(std::filesystem::path torrent_file)
 {
     std::string encoded_value = this->read_file(torrent_file);
     Decode decode = Decode();
-    json info = decode.decode_bencoded_value(encoded_value);
-    this->announceURL = info["announce"];
-    this->file_size = info["info"]["length"];
-    this->name = info["info"]["name"];
-    this->piece_length = info["info"]["piece length"];
-    this->pieces_hash = info["info"]["pieces"];
+    json metaInfo = decode.decode_bencoded_value(encoded_value);
+    this->announceURL = metaInfo["announce"];
+    this->file_size = metaInfo["info"]["length"];
+    this->name = metaInfo["info"]["name"];
+    this->piece_length = metaInfo["info"]["piece length"];
+    this->pieces_hash = metaInfo["info"]["pieces"];
 }
 
 /**
@@ -117,11 +119,28 @@ std::string MetaInfo::to_string()
  */
 json MetaInfo::to_json()
 {
-    json j;
-    j["announceURL"] = this->announceURL;
-    j["file_size"] = this->file_size;
-    j["name"] = this->name;
-    j["piece_length"] = this->piece_length;
-    j["pieces_hash"] = this->pieces_hash;
+    json j = {
+        {"length", this->file_size},
+        {"name", this->name},
+        {"piece length", this->piece_length},
+        {"pieces", this->pieces_hash}};
+
     return j;
+}
+
+/**
+ * @brief returns the info hash of the torrent file
+ *
+ * @return std::string
+ */
+std::string MetaInfo::get_info_hash()
+{
+    json info = this->to_json();
+    Encode encode = Encode();
+    std::string encoded_info = encode.encode_bencoded_value(info);
+    SHA1 checksum;
+    checksum.update(encoded_info);
+
+    return checksum.final();
+    // return encoded_info;
 }

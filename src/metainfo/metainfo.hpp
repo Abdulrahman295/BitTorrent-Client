@@ -32,4 +32,6 @@ public:
     std::string to_string();
 
     json to_json();
+
+    std::string get_info_hash();
 };
