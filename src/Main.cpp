@@ -5,10 +5,12 @@
 #include <cstdlib>
 
 #include "lib/nlohmann/json.hpp"
+#include <cpr/cpr.h>
 
 #include "bencode/decode.hpp"
 #include "bencode/encode.hpp"
 #include "metainfo/metainfo.hpp"
+#include "client/client.hpp"
 
 using json = nlohmann::json;
 
@@ -79,6 +81,32 @@ int info_command(int argc, char *argv[])
     return 0;
 }
 
+int peers_command(int argc, char *argv[])
+{
+    if (argc < 3)
+    {
+        std::cerr << "Usage: " << argv[0] << " peers <torrent_file>" << std::endl;
+        return 1;
+    }
+
+    std::string torrent_file = argv[2];
+
+    try
+    {
+        MetaInfo metaInfo = MetaInfo(torrent_file);
+        Client cli = Client();
+        std::string peers = cli.discover_peers(metaInfo);
+        std::cout << peers << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << std::unitbuf;
@@ -100,6 +128,10 @@ int main(int argc, char *argv[])
     else if (command == "info")
     {
         return info_command(argc, argv);
+    }
+    else if (command == "peers")
+    {
+        return peers_command(argc, argv);
     }
     else
     {

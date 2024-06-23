@@ -1,7 +1,9 @@
+#pragma once
+
 #include <string>
 
-#include "../lib/nlohmann/json.hpp"
-#include "type.hpp"
+#include "lib/nlohmann/json.hpp"
+#include "bencode/type.hpp"
 
 using json = nlohmann::json;
 

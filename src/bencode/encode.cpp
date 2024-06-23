@@ -4,8 +4,8 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "encode.hpp"
-#include "../lib/nlohmann/json.hpp"
+#include "bencode/encode.hpp"
+#include "lib/nlohmann/json.hpp"
 
 using json = nlohmann::json;
 

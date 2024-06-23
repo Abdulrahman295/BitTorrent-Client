@@ -8,11 +8,16 @@
 #include <iomanip>
 #include <sstream>
 
-#include "metainfo.hpp"
-#include "../bencode/decode.hpp"
-#include "../bencode/encode.hpp"
-#include "sha1.hpp"
+#include "metainfo/metainfo.hpp"
+#include "bencode/decode.hpp"
+#include "bencode/encode.hpp"
+#include "metainfo/sha1.hpp"
 
+/**
+ * @brief Construct a new Meta Info:: Meta Info object
+ *
+ * @param torrent_file
+ */
 MetaInfo::MetaInfo(std::filesystem::path torrent_file)
 {
     std::string encoded_value = this->read_file(torrent_file);
@@ -171,4 +176,27 @@ std::string MetaInfo::get_info_hash()
 
     return checksum.final();
     // return encoded_info;
+}
+
+/**
+ * @brief
+ *
+ * @return std::string
+ */
+std::string MetaInfo::get_info_string()
+{
+    std::string info_hash = this->get_info_hash();
+
+    std::vector<uint8_t> bytes;
+
+    for (unsigned int i = 0; i < info_hash.length(); i += 2)
+    {
+        std::string byteString = info_hash.substr(i, 2);
+        char byte = (char)strtol(byteString.c_str(), NULL, 16);
+        bytes.push_back(byte);
+    }
+
+    std::string info_string = std::string(reinterpret_cast<char *>(bytes.data()), bytes.size() * sizeof(uint8_t));
+
+    return info_string;
 }

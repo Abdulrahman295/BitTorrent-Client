@@ -4,7 +4,7 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "decode.hpp"
+#include "bencode/decode.hpp"
 
 using json = nlohmann::json;
 

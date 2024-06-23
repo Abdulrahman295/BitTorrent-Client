@@ -1,7 +1,9 @@
+#pragma once
+
 #include <string>
 #include <filesystem>
 
-#include "../lib/nlohmann/json.hpp"
+#include "lib/nlohmann/json.hpp"
 
 using json = nlohmann::json;
 
@@ -34,6 +36,8 @@ public:
     json to_json();
 
     std::string get_info_hash();
+
+    std::string get_info_string();
 
     std::string stringToHex(const std::string &input);
 };
