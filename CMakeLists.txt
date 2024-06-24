@@ -5,10 +5,10 @@ project(bittorrent-starter-cpp)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
 
 set(CMAKE_CXX_STANDARD 23) # Enable the C++23 standard
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
+# set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
+# set(CMAKE_VERBOSE_MAKEFILE OFF)
+# set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 
 # Include FetchContent module
 include(FetchContent)
