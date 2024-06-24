@@ -8,12 +8,6 @@
 
 using json = nlohmann::json;
 
-/**
- * @brief  Decodes the bencoded value based on the type of the value
- *
- * @param encoded_value
- * @return json
- */
 json Decode::decode_bencoded_value(const std::string &encoded_value)
 {
     auto it = encoded_value.begin();
@@ -42,12 +36,6 @@ json Decode::decode_bencoded_value(const std::string &encoded_value, std::string
     }
 }
 
-/**
- * @brief Returns the type of the encoded value
- *
- * @param encoded_value
- * @return EncodedValueType
- */
 EncodedValueType Decode::get_encoded_value_type(std::string::const_iterator &it)
 {
     if (this->is_integer(it))
@@ -72,60 +60,26 @@ EncodedValueType Decode::get_encoded_value_type(std::string::const_iterator &it)
     }
 }
 
-/**
- * @brief returns true if the encoded value is an integer
- *
- * @param encoded_value
- * @return true
- * @return false
- */
 bool Decode::is_integer(std::string::const_iterator &it)
 {
     return *it == 'i';
 }
 
-/**
- * @brief returns true if the encoded value is a string
- *
- * @param encoded_value
- * @return true
- * @return false
- */
 bool Decode::is_string(std::string::const_iterator &it)
 {
     return std::isdigit(*it);
 }
 
-/**
- * @brief returns true if the encoded value is a list
- *
- * @param encoded_value
- * @return true
- * @return false
- */
 bool Decode::is_list(std::string::const_iterator &it)
 {
     return *it == 'l';
 }
 
-/**
- * @brief returns true if the encoded value is a dict
- *
- * @param encoded_value
- * @return true
- * @return false
- */
 bool Decode::is_dict(std::string::const_iterator &it)
 {
     return *it == 'd';
 }
 
-/**
- * @brief returns the json object of an integer value
- *
- * @param encoded_value
- * @return json
- */
 json Decode::decode_integer(const std::string &encoded_value, std::string::const_iterator &it)
 {
     it++;                                                         // skip (i) char
@@ -160,12 +114,6 @@ json Decode::decode_integer(const std::string &encoded_value, std::string::const
     return json(number);
 }
 
-/**
- * @brief returns the json object of a string value
- *
- * @param encoded_value
- * @return json
- */
 json Decode::decode_string(const std::string &encoded_value, std::string::const_iterator &it)
 {
     auto colon_index = std::find(it, std::end(encoded_value), ':');
@@ -190,12 +138,6 @@ json Decode::decode_string(const std::string &encoded_value, std::string::const_
     return json(str);
 }
 
-/**
- * @brief returns the json object of a list value
- *
- * @param encoded_value
- * @return json
- */
 json Decode::decode_list(const std::string &encoded_value, std::string::const_iterator &it)
 {
     it++; // skip (l) char
@@ -216,12 +158,6 @@ json Decode::decode_list(const std::string &encoded_value, std::string::const_it
     return list;
 }
 
-/**
- * @brief returns the json object of a dict value
- *
- * @param encoded_value
- * @return json
- */
 json Decode::decode_dict(const std::string &encoded_value, std::string::const_iterator &it)
 {
     it++; // skip (d) char

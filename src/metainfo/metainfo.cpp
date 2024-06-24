@@ -13,11 +13,6 @@
 #include "bencode/encode.hpp"
 #include "metainfo/sha1.hpp"
 
-/**
- * @brief Construct a new Meta Info:: Meta Info object
- *
- * @param torrent_file
- */
 MetaInfo::MetaInfo(std::filesystem::path torrent_file)
 {
     std::string encoded_value = this->read_file(torrent_file);
@@ -30,12 +25,6 @@ MetaInfo::MetaInfo(std::filesystem::path torrent_file)
     this->pieces_hash = metaInfo["info"]["pieces"];
 }
 
-/**
- * @brief read_file reads the content of the torrent file
- *
- * @param torrent_file
- * @return std::string
- */
 std::string MetaInfo::read_file(std::filesystem::path torrent_file)
 {
     std::ifstream file(torrent_file, std::ios::binary);
@@ -52,52 +41,26 @@ std::string MetaInfo::read_file(std::filesystem::path torrent_file)
     return encoded_value;
 }
 
-/**
- * @brief returns the announce URL
- *
- * @return std::string
- */
 std::string MetaInfo::get_announceURL()
 {
     return this->announceURL;
 }
 
-/**
- * @brief returns the file size
- *
- * @return size_t
- */
 size_t MetaInfo::get_file_size()
 {
     return this->file_size;
 }
 
-/**
- * @brief returns the name of the file
- *
- * @return std::string
- */
 std::string MetaInfo::get_name()
 {
     return this->name;
 }
 
-/**
- * @brief returns the piece length
- *
- * @return size_t
- */
 size_t MetaInfo::get_piece_length()
 {
     return this->piece_length;
 }
 
-/**
- * @brief converts a string to its hexadecimal representation
- *
- * @param input
- * @return std::string
- */
 std::string MetaInfo::stringToHex(const std::string &input)
 {
     std::stringstream hex_stream;
@@ -111,11 +74,6 @@ std::string MetaInfo::stringToHex(const std::string &input)
     return hex_stream.str();
 }
 
-/**
- * @brief returns the pieces hash string in the hexademical format
- *
- * @return std::string
- */
 std::string MetaInfo::get_pieces_hash()
 {
     std::string result = "";
@@ -130,11 +88,6 @@ std::string MetaInfo::get_pieces_hash()
     return result;
 }
 
-/**
- * @brief returns the string representation of the MetaInfo object
- *
- * @return std::string
- */
 std::string MetaInfo::to_string()
 {
     std::string str = "Announce URL: " + this->announceURL + "\n";
@@ -145,11 +98,6 @@ std::string MetaInfo::to_string()
     return str;
 }
 
-/**
- * @brief returns the json representation of the MetaInfo object
- *
- * @return json
- */
 json MetaInfo::to_json()
 {
     json j = {
@@ -161,11 +109,6 @@ json MetaInfo::to_json()
     return j;
 }
 
-/**
- * @brief returns the info hash of the torrent file
- *
- * @return std::string
- */
 std::string MetaInfo::get_info_hash()
 {
     json info = this->to_json();
@@ -178,11 +121,6 @@ std::string MetaInfo::get_info_hash()
     // return encoded_info;
 }
 
-/**
- * @brief
- *
- * @return std::string
- */
 std::string MetaInfo::get_info_string()
 {
     std::string info_hash = this->get_info_hash();

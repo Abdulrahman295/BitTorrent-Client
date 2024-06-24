@@ -9,12 +9,6 @@
 
 using json = nlohmann::json;
 
-/**
- * @brief Encodes the json value based on the type of the value
- *
- * @param value
- * @return std::string
- */
 std::string Encode::encode_bencoded_value(const json &value)
 {
     if (value.is_number_integer())
@@ -39,35 +33,17 @@ std::string Encode::encode_bencoded_value(const json &value)
     }
 }
 
-/**
- * @brief Encodes the integer value
- *
- * @param value
- * @return std::string
- */
 std::string Encode::encode_integer(const json &value)
 {
     return "i" + value.dump() + "e";
 }
 
-/**
- * @brief Encodes the string value
- *
- * @param value
- * @return std::string
- */
 std::string Encode::encode_string(const json &value)
 {
 
     return std::to_string(value.get<std::string>().size()) + ":" + value.get<std::string>();
 }
 
-/**
- * @brief Encodes the list value
- *
- * @param value
- * @return std::string
- */
 std::string Encode::encode_list(const json &value)
 {
     std::string encoded_value = "l";
@@ -81,12 +57,6 @@ std::string Encode::encode_list(const json &value)
     return encoded_value;
 }
 
-/**
- * @brief Encodes the dict value
- *
- * @param value
- * @return std::string
- */
 std::string Encode::encode_dict(const json &value)
 {
     std::string encoded_value = "d";

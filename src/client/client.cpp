@@ -17,11 +17,6 @@ using namespace std::string_literals;
 
 #pragma comment(lib, "Ws2_32.lib")
 
-/**
- * @brief sends a get request to the tracker server to discover peers IP addresses
- *
- * @return std::string
- */
 std::string Client::discover_peers(MetaInfo metaInfo)
 {
 
@@ -38,12 +33,6 @@ std::string Client::discover_peers(MetaInfo metaInfo)
     return this->parse_server_response(r.text);
 }
 
-/**
- * @brief parse the tracker response and return the peers IP addresses
- *
- * @param response
- * @return std::string
- */
 std::string Client::parse_server_response(std::string response)
 {
     Decode decode = Decode();
@@ -64,13 +53,6 @@ std::string Client::parse_server_response(std::string response)
     return result;
 }
 
-/**
- * @brief parse the IP address from the peers string
- *
- * @param peers_str
- * @param index
- * @return std::string
- */
 std::string Client::parse_ip(std::string peers_str, size_t index)
 {
     std::string ip_raw = peers_str.substr(index * 6, 4);
@@ -82,13 +64,6 @@ std::string Client::parse_ip(std::string peers_str, size_t index)
     return ip;
 }
 
-/**
- * @brief parse the port from the peers string
- *
- * @param peers_str
- * @param index
- * @return std::string
- */
 std::string Client::parse_port(std::string peers_str, size_t index)
 {
     std::string port_raw = peers_str.substr(index * 6 + 4, 2);
@@ -99,14 +74,6 @@ std::string Client::parse_port(std::string peers_str, size_t index)
     return std::to_string(port);
 }
 
-/**
- * @brief creates a TCP connection with a peer
- *
- * @param metaInfo
- * @param peer_ip
- * @param peer_port
- * @return std::string
- */
 void Client::create_connection(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
 {
     // Initialize Winsock
@@ -143,12 +110,6 @@ void Client::create_connection(MetaInfo metaInfo, std::string peer_ip, std::stri
     this->sock = ConnectSocket;
 }
 
-/**
- * @brief creates a handshake message
- *
- * @param metaInfo
- * @return std::string
- */
 std::string Client::create_handshake_message(MetaInfo metaInfo)
 {
     std::string handshake_message = "\x13"s                               // length of the protocol string
@@ -160,11 +121,6 @@ std::string Client::create_handshake_message(MetaInfo metaInfo)
     return handshake_message;
 }
 
-/**
- * @brief sends a message to the peer
- *
- * @param message
- */
 void Client::send_message(std::string message)
 {
     int iResult = send(this->sock, message.c_str(), message.size(), 0);
@@ -176,11 +132,6 @@ void Client::send_message(std::string message)
     }
 }
 
-/**
- * @brief receives a message from the peer
- *
- * @return std::string
- */
 std::string Client::receive_message()
 {
     char buffer[1024];
@@ -195,12 +146,6 @@ std::string Client::receive_message()
     return std::string(buffer, iResult);
 }
 
-/**
- * @brief parse the peer response and return the peer id
- *
- * @param response
- * @return std::string
- */
 std::string Client::parse_peer_response(std::string response)
 {
     size_t start_pos =
@@ -222,11 +167,6 @@ std::string Client::parse_peer_response(std::string response)
     return ss.str();
 }
 
-/**
- * @brief returns the peer id
- *
- * @return std::string
- */
 std::string Client::get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
 {
     this->create_connection(metaInfo, peer_ip, peer_port);
