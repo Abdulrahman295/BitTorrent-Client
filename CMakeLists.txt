@@ -5,12 +5,15 @@ project(bittorrent-starter-cpp)
 file(GLOB_RECURSE SOURCE_FILES src/*.cpp src/*.hpp)
 
 set(CMAKE_CXX_STANDARD 23) # Enable the C++23 standard
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 
 # Include FetchContent module
 include(FetchContent)
 
 # Fetch Range-v3 library
-set(RANGES_ENABLE_TESTS OFF)  # Disable tests for range-v3
 FetchContent_Declare(
     range-v3
     GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
@@ -18,7 +21,6 @@ FetchContent_Declare(
 )
 
 # Fetch httplib library
-set(CPR_ENABLE_TESTS OFF)  # Disable tests for cpr
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
@@ -32,6 +34,17 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/libcpr/cpr.git
     GIT_TAG        1.10.0 
 )
+
+# Disable tests and reduce output
+set(RANGE_V3_TESTS OFF CACHE BOOL "Enable tests for Range-v3" FORCE)
+set(RANGE_V3_EXAMPLES OFF CACHE BOOL "Enable examples for Range-v3" FORCE)
+set(RANGE_V3_HEADER_ONLY ON CACHE BOOL "Use range-v3 as header-only" FORCE)
+
+set(CPR_BUILD_TESTS OFF CACHE BOOL "Set to ON to build cpr tests" FORCE)
+
+set(CURL_DISABLE_TESTS ON CACHE BOOL "Disable curl tests" FORCE)
+set(CURL_VERBOSE_LOGGING OFF CACHE BOOL "Disable verbose logging" FORCE)
+set(CURL_DISABLE_VERBOSE_STRINGS ON CACHE BOOL "Disable verbose strings" FORCE)
 
 # Make Range-v3, curl, and cpr available
 FetchContent_MakeAvailable(range-v3 httplib cpr)

@@ -81,6 +81,13 @@ int info_command(int argc, char *argv[])
     return 0;
 }
 
+/**
+ * @brief handles the peers command
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
 int peers_command(int argc, char *argv[])
 {
     if (argc < 3)
@@ -97,6 +104,43 @@ int peers_command(int argc, char *argv[])
         Client cli = Client();
         std::string peers = cli.discover_peers(metaInfo);
         std::cout << peers << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief handles the handshake command
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int handshake_command(int argc, char *argv[])
+{
+    if (argc < 4)
+    {
+        std::cerr << "Usage: " << argv[0] << " handshake <torrent_file> <peer_ip>:<peer_port>" << std::endl;
+        return 1;
+    }
+
+    std::string torrent_file = argv[2];
+
+    try
+    {
+        std::string address = argv[3];
+        std::string peer_ip = address.substr(0, address.find(":"));
+        std::string peer_port = address.substr(address.find(":") + 1);
+
+        MetaInfo metaInfo = MetaInfo(torrent_file);
+        Client cli = Client();
+        std::string peerID = cli.get_peer_id(metaInfo, peer_ip, peer_port);
+        std::cout << "Peer ID: " << peerID << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -132,6 +176,10 @@ int main(int argc, char *argv[])
     else if (command == "peers")
     {
         return peers_command(argc, argv);
+    }
+    else if (command == "handshake")
+    {
+        return handshake_command(argc, argv);
     }
     else
     {
