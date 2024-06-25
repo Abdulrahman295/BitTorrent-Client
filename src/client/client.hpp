@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-// #include <winsock2.h>
-// #include <ws2tcpip.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -10,12 +8,9 @@
 
 #include "metainfo/metainfo.hpp"
 
-// #pragma comment(lib, "Ws2_32.lib")
-
 class Client
 {
 private:
-    // SOCKET sock;
     int sock;
 
 public:

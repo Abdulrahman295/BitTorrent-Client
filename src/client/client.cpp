@@ -9,8 +9,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-// #include <winsock2.h>
-// #include <ws2tcpip.h>
 
 #include <cpr/cpr.h>
 
@@ -19,7 +17,6 @@
 
 using namespace std::string_literals;
 
-// #pragma comment(lib, "Ws2_32.lib")
 
 std::string Client::discover_peers(MetaInfo metaInfo)
 {
@@ -80,39 +77,6 @@ std::string Client::parse_port(std::string peers_str, size_t index)
 
 void Client::create_connection(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
 {
-    // Initialize Winsock
-    // WSADATA wsaData;
-    // int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    // if (iResult != 0)
-    // {
-    //     throw std::runtime_error("WSAStartup failed: " + std::to_string(iResult));
-    // }
-
-    // Create a TCP socket
-    // SOCKET ConnectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    // if (ConnectSocket == INVALID_SOCKET)
-    // {
-    //     WSACleanup();
-    //     throw std::runtime_error("socket failed: " + std::to_string(WSAGetLastError()));
-    // }
-
-    // Resolve the peer address and port
-    // sockaddr_in peerAddr;
-    // peerAddr.sin_family = AF_INET;
-    // peerAddr.sin_port = htons(std::stoi(peer_port));
-    // inet_pton(AF_INET, peer_ip.c_str(), &peerAddr.sin_addr);
-
-    // Connect
-    // iResult = connect(ConnectSocket, (SOCKADDR *)&peerAddr, sizeof(peerAddr));
-    // if (iResult == SOCKET_ERROR)
-    // {
-    //     closesocket(ConnectSocket);
-    //     WSACleanup();
-    //     throw std::runtime_error("connect failed: " + std::to_string(WSAGetLastError()));
-    // }
-
-    // this->sock = ConnectSocket;
-
     // Create a TCP socket
     int ConnectSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (ConnectSocket < 0)
@@ -150,14 +114,6 @@ std::string Client::create_handshake_message(MetaInfo metaInfo)
 
 void Client::send_message(std::string message)
 {
-    // int iResult = send(this->sock, message.c_str(), message.size(), 0);
-    // if (iResult == SOCKET_ERROR)
-    // {
-    //     closesocket(this->sock);
-    //     WSACleanup();
-    //     throw std::runtime_error("send failed: " + std::to_string(WSAGetLastError()));
-    // }
-
     ssize_t iResult = send(this->sock, message.c_str(), message.size(), 0);
     if (iResult < 0)
     {
@@ -168,17 +124,6 @@ void Client::send_message(std::string message)
 
 std::string Client::receive_message()
 {
-    // char buffer[1024];
-    // int iResult = recv(this->sock, buffer, 1024, 0);
-    // if (iResult == SOCKET_ERROR)
-    // {
-    //     closesocket(this->sock);
-    //     WSACleanup();
-    //     throw std::runtime_error("recv failed: " + std::to_string(WSAGetLastError()));
-    // }
-
-    // return std::string(buffer, iResult);
-
     char buffer[1024];
     ssize_t iResult = recv(this->sock, buffer, 1024, 0);
     if (iResult < 0)
@@ -222,9 +167,6 @@ std::string Client::get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::str
     std::string response = this->receive_message();
 
     std::string peer_id = this->parse_peer_response(response);
-
-    // closesocket(this->sock);
-    // WSACleanup();
 
     close(this->sock);
 
