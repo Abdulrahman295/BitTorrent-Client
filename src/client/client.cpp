@@ -14,9 +14,14 @@
 
 #include "client/client.hpp"
 #include "bencode/decode.hpp"
+#include "messageHandler/messageHandler.hpp"
 
 using namespace std::string_literals;
 
+Client::Client()
+{
+    this->sock = 0;
+}
 
 std::string Client::discover_peers(MetaInfo metaInfo)
 {
@@ -31,52 +36,16 @@ std::string Client::discover_peers(MetaInfo metaInfo)
                                    {"compact", "1"},
                                    {"info_hash", metaInfo.get_info_string()}});
 
-    return this->parse_server_response(r.text);
-}
-
-std::string Client::parse_server_response(std::string response)
-{
-    Decode decode = Decode();
-    auto decoded_response = decode.decode_bencoded_value(response);
-    std::string peers_str = decoded_response["peers"].get<std::string>();
-
-    std::string result = ""; // represents the the peers IP addresses
-
-    size_t number_of_peers = peers_str.size() / 6;
-    for (size_t i = 0; i < number_of_peers; i++)
-    {
-        std::string ip = this->parse_ip(peers_str, i);
-        std::string port = this->parse_port(peers_str, i);
-
-        result += ip + ":" + port + "\n";
-    }
-
-    return result;
-}
-
-std::string Client::parse_ip(std::string peers_str, size_t index)
-{
-    std::string ip_raw = peers_str.substr(index * 6, 4);
-    std::string ip = std::to_string(static_cast<unsigned char>(ip_raw[0])) + "." +
-                     std::to_string(static_cast<unsigned char>(ip_raw[1])) + "." +
-                     std::to_string(static_cast<unsigned char>(ip_raw[2])) + "." +
-                     std::to_string(static_cast<unsigned char>(ip_raw[3]));
-
-    return ip;
-}
-
-std::string Client::parse_port(std::string peers_str, size_t index)
-{
-    std::string port_raw = peers_str.substr(index * 6 + 4, 2);
-    uint16_t port =
-        (static_cast<uint16_t>(static_cast<unsigned char>(port_raw[0]) << 8)) |
-        static_cast<uint16_t>(static_cast<unsigned char>(port_raw[1]));
-
-    return std::to_string(port);
+    return MessageHandler::parse_server_response(r.text);
 }
 
 void Client::create_connection(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
 {
+    if (this->sock != 0)
+    {
+        close(this->sock);
+    }
+
     // Create a TCP socket
     int ConnectSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (ConnectSocket < 0)
@@ -99,17 +68,6 @@ void Client::create_connection(MetaInfo metaInfo, std::string peer_ip, std::stri
     }
 
     this->sock = ConnectSocket;
-}
-
-std::string Client::create_handshake_message(MetaInfo metaInfo)
-{
-    std::string handshake_message = "\x13"s                               // length of the protocol string
-                                    + "BitTorrent protocol"s              // protocol string
-                                    + "\x00\x00\x00\x00\x00\x00\x00\x00"s // reserved
-                                    + metaInfo.get_info_string()          // info hash
-                                    + "00112233445566778899"s;            // peer id
-
-    return handshake_message;
 }
 
 void Client::send_message(std::string message)
@@ -135,38 +93,17 @@ std::string Client::receive_message()
     return std::string(buffer, iResult);
 }
 
-std::string Client::parse_peer_response(std::string response)
-{
-    size_t start_pos =
-        28    // length of the protocol string + reserved bytes
-        + 20; // length of the info hash
-
-    size_t peer_id_length = 20;
-
-    std::string peer_id_raw = response.substr(start_pos, peer_id_length);
-
-    // get peer_id in hex format
-    std::stringstream ss;
-    for (unsigned char c : peer_id_raw)
-    {
-        ss << std::hex << std::setw(2) << std::setfill('0')
-           << static_cast<int>(c);
-    }
-
-    return ss.str();
-}
-
 std::string Client::get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
 {
     this->create_connection(metaInfo, peer_ip, peer_port);
 
-    std::string handshake_message = this->create_handshake_message(metaInfo);
+    std::string handshake_message = MessageHandler::create_handshake_message(metaInfo);
 
     this->send_message(handshake_message);
 
     std::string response = this->receive_message();
 
-    std::string peer_id = this->parse_peer_response(response);
+    std::string peer_id = MessageHandler::parse_handshake_response(response);
 
     close(this->sock);
 
