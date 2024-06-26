@@ -85,6 +85,18 @@
     "stop_token": "cpp",
     "thread": "cpp",
     "unordered_set": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "*.tcc": "cpp",
+    "bitset": "cpp",
+    "condition_variable": "cpp",
+    "csignal": "cpp",
+    "cstdarg": "cpp",
+    "cwctype": "cpp",
+    "memory_resource": "cpp",
+    "string_view": "cpp",
+    "future": "cpp",
+    "numbers": "cpp",
+    "semaphore": "cpp",
+    "cinttypes": "cpp"
   }
 }

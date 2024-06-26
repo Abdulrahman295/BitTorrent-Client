@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <filesystem>
 
 #include "lib/nlohmann/json.hpp"
@@ -66,9 +67,9 @@ public:
     /**
      * @brief returns the pieces hash string in the hexadecimal format
      *
-     * @return std::string
+     * @return std::vector<std::string>
      */
-    std::string get_pieces_hash();
+    std::vector<std::string> get_pieces_hash();
 
     /**
      * @brief returns the string representation of the MetaInfo object

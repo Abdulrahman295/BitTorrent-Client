@@ -74,14 +74,14 @@ std::string MetaInfo::stringToHex(const std::string &input)
     return hex_stream.str();
 }
 
-std::string MetaInfo::get_pieces_hash()
+std::vector<std::string> MetaInfo::get_pieces_hash()
 {
-    std::string result = "";
+    std::vector<std::string> result;
     auto it = this->pieces_hash.begin();
 
     while (it != this->pieces_hash.end())
     {
-        result += this->stringToHex(std::string(it, it + 20)) + "\n";
+        result.push_back(this->stringToHex(std::string(it, it + 20)));
         it += 20;
     }
 
@@ -118,7 +118,6 @@ std::string MetaInfo::get_info_hash()
     checksum.update(encoded_info);
 
     return checksum.final();
-    // return encoded_info;
 }
 
 std::string MetaInfo::get_info_string()

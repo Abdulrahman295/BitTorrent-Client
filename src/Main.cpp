@@ -69,8 +69,11 @@ int info_command(int argc, char *argv[])
         std::cout << "Length: " << meta_info.get_file_size() << std::endl;
         std::cout << "Info Hash: " << meta_info.get_info_hash() << std::endl;
         std::cout << "Piece Length: " << meta_info.get_piece_length() << std::endl;
-        std::cout << "Piece Hashes: \n"
-                  << meta_info.get_pieces_hash() << std::endl;
+        std::cout << "Piece Hashes: " << std::endl;
+        for (auto &hash : meta_info.get_pieces_hash())
+        {
+            std::cout << hash << std::endl;
+        }
     }
     catch (const std::exception &e)
     {
@@ -102,8 +105,12 @@ int peers_command(int argc, char *argv[])
     {
         MetaInfo metaInfo = MetaInfo(torrent_file);
         Client cli = Client();
-        std::string peers = cli.discover_peers(metaInfo);
-        std::cout << peers << std::endl;
+        std::vector<std::string> peers = cli.discover_peers(metaInfo);
+
+        for (auto &peer : peers)
+        {
+            std::cout << peer << std::endl;
+        }
     }
     catch (const std::exception &e)
     {
@@ -141,6 +148,41 @@ int handshake_command(int argc, char *argv[])
         Client cli = Client();
         std::string peerID = cli.get_peer_id(metaInfo, peer_ip, peer_port);
         std::cout << "Peer ID: " << peerID << std::endl;
+        cli.close_connection();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+
+    return 0;
+}
+
+int download_piece_command(int argc, char *argv[])
+{
+    if (argc < 6)
+    {
+        std::cerr << "Usage: " << argv[0] << " download_piece -o <output_file> <torrent file> <piece_index>" << std::endl;
+        return 1;
+    }
+
+    std::string output_file = argv[3];
+    std::string torrent_file = argv[4];
+    size_t piece_index = std::stoul(argv[5]);
+
+    try
+    {
+        // std::cout << "Downloading piece..." << std::endl;
+        // std::cout << "Output file: " << output_file << std::endl;
+        // std::cout << "Torrent file: " << torrent_file << std::endl;
+        // std::cout << "Piece index: " << piece_index << std::endl;
+
+        MetaInfo metaInfo = MetaInfo(torrent_file);
+        Client cli = Client();
+        cli.download_piece(metaInfo, output_file, piece_index);
+        cli.close_connection();
+         std::cout << "Downloaded piece " << piece_index << " to " << output_file << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -180,6 +222,10 @@ int main(int argc, char *argv[])
     else if (command == "handshake")
     {
         return handshake_command(argc, argv);
+    }
+    else if (command == "download_piece")
+    {
+        return download_piece_command(argc, argv);
     }
     else
     {
