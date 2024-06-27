@@ -88,6 +88,15 @@ public:
     void download_piece(MetaInfo metaInfo, std::string output_file, size_t piece_index);
 
     /**
+     * @brief verifies the piece by comparing its hash with the expected hash
+     *
+     * @param metaInfo
+     * @param piece_data
+     * @param piece_index
+     */
+    void verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, size_t piece_index);
+
+    /**
      * @brief closes the TCP connection
      */
     void close_connection();

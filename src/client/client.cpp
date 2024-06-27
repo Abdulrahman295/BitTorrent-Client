@@ -263,8 +263,27 @@ void Client::download_piece(MetaInfo metaInfo, std::string output_file, size_t p
     // send a request message Wait for a piece message for each block
     std::vector<uint8_t> piece_data = this->fetch_piece_blocks(metaInfo, piece_index);
 
+    // verify the piece hash before saving it to the output file
+    verify_piece(metaInfo, piece_data, piece_index);
+
     // save the data to the output file
     this->save_to_file(output_file, piece_data);
+}
+
+void Client::verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, size_t piece_index)
+{
+    auto sha = SHA1();
+
+    sha.update(std::string_view(reinterpret_cast<const char *>(piece_data.data()), piece_data.size()));
+
+    const auto calculated_piece_hash = sha.final();
+
+    const auto expected_piece_hash = metaInfo.get_pieces_hash()[piece_index];
+
+    if (calculated_piece_hash != expected_piece_hash)
+    {
+        throw std::runtime_error("Piece hash verification failed, expected: " + expected_piece_hash + " but got: " + calculated_piece_hash);
+    }
 }
 
 void Client::close_connection()
