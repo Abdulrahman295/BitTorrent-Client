@@ -57,12 +57,30 @@ public:
      */
     Message receive_peer_message();
 
+    // /**
+    //  * @brief creates a TCP connection with a peer and sends a handshake message.
+    //  *
+    //  * @param metaInfo
+    //  * @param peer_ip
+    //  * @param peer_port
+    //  */
+    // void do_handshake(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
+
     /**
-     * @brief creates a TCP connection with a peer and returns its id
+     * @brief returns peer id
      *
      * @return std::string
      */
     std::string get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
+
+    /**
+     * @brief initiates a connection with a peer to be ready for requesting pieces
+     *
+     * @param metaInfo
+     * @param peer_ip
+     * @param peer_port
+     */
+    void connect_to_peer(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
 
     /**
      * @brief sends a request message and waits for a piece message for each block then returns all the blocks of a piece with the given index
@@ -71,6 +89,15 @@ public:
      * @return std::vector<uint8_t>
      */
     std::vector<uint8_t> fetch_piece_blocks(MetaInfo metaInfo, size_t piece_index);
+
+    /**
+     * @brief verifies the piece by comparing its hash with the expected hash
+     *
+     * @param metaInfo
+     * @param piece_data
+     * @param piece_index
+     */
+    void verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, size_t piece_index);
 
     /**
      * @brief saves the data to the output file
@@ -84,17 +111,18 @@ public:
      * @brief downloads a piece from the peer to the output file
      *
      * @param metaInfo
+     * @param output_file
+     * @param piece_index
      */
     void download_piece(MetaInfo metaInfo, std::string output_file, size_t piece_index);
 
     /**
-     * @brief verifies the piece by comparing its hash with the expected hash
+     * @brief downloads the file from the peers
      *
      * @param metaInfo
-     * @param piece_data
-     * @param piece_index
+     * @param output_file
      */
-    void verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, size_t piece_index);
+    void download_file(MetaInfo metaInfo, std::string output_file);
 
     /**
      * @brief closes the TCP connection

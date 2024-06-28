@@ -166,6 +166,28 @@ std::string Client::get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::str
     return peer_id;
 }
 
+void Client::connect_to_peer(MetaInfo metaInfo, std::string peer_ip, std::string peer_port)
+{
+    std::string peerID = this->get_peer_id(metaInfo, peer_ip, peer_port); // establish connection and get peer id
+
+    // Wait for a bitfield message from the peer indicating which pieces it has
+    Message bitfield_response = this->receive_peer_message();
+    if (bitfield_response.get_type() != MessageType::BITFIELD)
+    {
+        throw std::runtime_error("Expected BITFIELD(ID=5) message, but received message of ID: " + std::to_string(static_cast<int>(bitfield_response.get_type())));
+    }
+
+    // send interested message and wait for unchoke message
+    std::vector<uint8_t> interested_message = MessageHandler::create_interested_message();
+    this->send_message(interested_message);
+
+    Message unchoke_response = this->receive_peer_message();
+    if (unchoke_response.get_type() != MessageType::UNCHOKE)
+    {
+        throw std::runtime_error("Expected UNCHOKE message(ID=1), but received  message of ID: " + std::to_string(static_cast<int>(unchoke_response.get_type())));
+    }
+}
+
 std::vector<uint8_t> Client::fetch_piece_blocks(MetaInfo metaInfo, size_t piece_index)
 {
     const uint32_t BLOCK_SIZE = 16 * 1024;
@@ -224,52 +246,6 @@ std::vector<uint8_t> Client::fetch_piece_blocks(MetaInfo metaInfo, size_t piece_
     return piece_data;
 }
 
-void Client::save_to_file(std::string output_file, std::vector<uint8_t> data)
-{
-    std::ofstream file(output_file, std::ios::binary);
-    file.write(reinterpret_cast<char const *>(data.data()), data.size());
-    file.close();
-}
-
-void Client::download_piece(MetaInfo metaInfo, std::string output_file, size_t piece_index)
-{
-    // discover peers and make a handeshake with one of them
-    std::vector<std::string> peers = this->discover_peers(metaInfo);
-
-    if (peers.size() == 0)
-        throw std::runtime_error("No peers found");
-
-    std::string peer_ip = peers[0].substr(0, peers[0].find(":"));
-    std::string peer_port = peers[0].substr(peers[0].find(":") + 1);
-    std::string peerID = this->get_peer_id(metaInfo, peer_ip, peer_port); // establish connection and get peer id
-
-    // Wait for a bitfield message from the peer indicating which pieces it has
-    Message bitfield_response = this->receive_peer_message();
-    if (bitfield_response.get_type() != MessageType::BITFIELD)
-    {
-        throw std::runtime_error("Expected BITFIELD(ID=5) message, but received message of ID: " + std::to_string(static_cast<int>(bitfield_response.get_type())));
-    }
-
-    // send interested message and wait for unchoke message
-    std::vector<uint8_t> interested_message = MessageHandler::create_interested_message();
-    this->send_message(interested_message);
-
-    Message unchoke_response = this->receive_peer_message();
-    if (unchoke_response.get_type() != MessageType::UNCHOKE)
-    {
-        throw std::runtime_error("Expected UNCHOKE message(ID=1), but received  message of ID: " + std::to_string(static_cast<int>(unchoke_response.get_type())));
-    }
-
-    // send a request message Wait for a piece message for each block
-    std::vector<uint8_t> piece_data = this->fetch_piece_blocks(metaInfo, piece_index);
-
-    // verify the piece hash before saving it to the output file
-    verify_piece(metaInfo, piece_data, piece_index);
-
-    // save the data to the output file
-    this->save_to_file(output_file, piece_data);
-}
-
 void Client::verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, size_t piece_index)
 {
     auto sha = SHA1();
@@ -284,6 +260,67 @@ void Client::verify_piece(MetaInfo metaInfo, std::vector<uint8_t> piece_data, si
     {
         throw std::runtime_error("Piece hash verification failed, expected: " + expected_piece_hash + " but got: " + calculated_piece_hash);
     }
+}
+
+void Client::save_to_file(std::string output_file, std::vector<uint8_t> data)
+{
+    std::ofstream file(output_file, std::ios::binary);
+    file.write(reinterpret_cast<char const *>(data.data()), data.size());
+    file.close();
+}
+
+void Client::download_piece(MetaInfo metaInfo, std::string output_file, size_t piece_index)
+{
+    std::vector<std::string> peers = this->discover_peers(metaInfo);
+    if (peers.size() == 0)
+        throw std::runtime_error("No peers found");
+
+    std::string peer_ip = peers[0].substr(0, peers[0].find(":"));
+    std::string peer_port = peers[0].substr(peers[0].find(":") + 1);
+
+    this->connect_to_peer(metaInfo, peer_ip, peer_port);
+
+    // send a request message Wait for a piece message for each block
+    std::vector<uint8_t> piece_data = this->fetch_piece_blocks(metaInfo, piece_index);
+
+    // verify the piece hash before saving it to the output file
+    verify_piece(metaInfo, piece_data, piece_index);
+
+    // save the data to the output file
+    this->save_to_file(output_file, piece_data);
+}
+
+void Client::download_file(MetaInfo metaInfo, std::string output_file)
+{
+    std::vector<std::string> peers = this->discover_peers(metaInfo);
+    if (peers.size() == 0)
+        throw std::runtime_error("No peers found");
+
+    std::string peer_ip = peers[0].substr(0, peers[0].find(":"));
+    std::string peer_port = peers[0].substr(peers[0].find(":") + 1);
+
+    this->connect_to_peer(metaInfo, peer_ip, peer_port);
+
+    std::vector<std::vector<uint8_t>> downloaded_pieces(metaInfo.get_pieces_hash().size());
+
+    for (size_t i = 0; i < metaInfo.get_pieces_hash().size(); i++)
+    {
+        std::vector<uint8_t> piece_data = this->fetch_piece_blocks(metaInfo, i);
+
+        verify_piece(metaInfo, piece_data, i);
+
+        downloaded_pieces[i] = piece_data;
+    }
+
+    // concatenate all the pieces into a single data vector
+    std::vector<uint8_t> data;
+    for (auto &piece : downloaded_pieces)
+    {
+        data.insert(data.end(), piece.begin(), piece.end());
+    }
+
+    // save the data to the output file
+    this->save_to_file(output_file, data);
 }
 
 void Client::close_connection()

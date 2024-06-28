@@ -159,6 +159,13 @@ int handshake_command(int argc, char *argv[])
     return 0;
 }
 
+/**
+ * @brief handles the download_piece command
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
 int download_piece_command(int argc, char *argv[])
 {
     if (argc < 6)
@@ -173,16 +180,46 @@ int download_piece_command(int argc, char *argv[])
 
     try
     {
-        // std::cout << "Downloading piece..." << std::endl;
-        // std::cout << "Output file: " << output_file << std::endl;
-        // std::cout << "Torrent file: " << torrent_file << std::endl;
-        // std::cout << "Piece index: " << piece_index << std::endl;
-
         MetaInfo metaInfo = MetaInfo(torrent_file);
         Client cli = Client();
         cli.download_piece(metaInfo, output_file, piece_index);
         cli.close_connection();
-         std::cout << "Downloaded piece " << piece_index << " to " << output_file << std::endl;
+        std::cout << "Downloaded piece " << piece_index << " to " << output_file << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief handles the download_file command
+ *
+ * @param argc
+ * @param argv
+ * @return int
+ */
+int download_file_command(int argc, char *argv[])
+{
+    if (argc < 5)
+    {
+        std::cerr << "Usage: " << argv[0] << " download -o <output_file> <torrent file>" << std::endl;
+        return 1;
+    }
+
+    std::string output_file = argv[3];
+    std::string torrent_file = argv[4];
+
+    try
+    {
+        MetaInfo metaInfo = MetaInfo(torrent_file);
+        Client cli = Client();
+        cli.download_file(metaInfo, output_file);
+        cli.close_connection();
+        std::cout << "Downloaded " << torrent_file << " to " << output_file << "." << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -202,6 +239,10 @@ int main(int argc, char *argv[])
     {
         std::cerr << "Usage: \t " << argv[0] << " decode <encoded_value>" << std::endl;
         std::cerr << "\t " << argv[0] << " info <torrent file>" << std::endl;
+        std::cerr << "\t " << argv[0] << " peers <torrent file>" << std::endl;
+        std::cerr << "\t " << argv[0] << " handshake <torrent file> <peer_ip>:<peer_port>" << std::endl;
+        std::cerr << "\t " << argv[0] << " download_piece -o <output_file> <torrent file> <piece_index>" << std::endl;
+        std::cerr << "\t " << argv[0] << " download -o <output_file> <torrent file>" << std::endl;
         return 1;
     }
 
@@ -226,6 +267,10 @@ int main(int argc, char *argv[])
     else if (command == "download_piece")
     {
         return download_piece_command(argc, argv);
+    }
+    else if (command == "download")
+    {
+        return download_file_command(argc, argv);
     }
     else
     {
