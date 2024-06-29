@@ -6,20 +6,21 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <queue>
+#include <mutex>
 
 #include "metainfo/metainfo.hpp"
 #include "messageHandler/message.hpp"
+#include "client/connection.hpp"
 class Client
 {
 private:
-    int sock;
+    std::queue<size_t> work_queue;
+    std::mutex work_queue_mutex;
+    std::vector<std::vector<uint8_t>> downloaded_pieces;
+    std::mutex downloaded_pieces_mutex;
 
 public:
-    /**
-     * @brief Construct a new Client object
-     */
-    Client();
-
     /**
      * @brief sends a get request to the tracker server to discover peers IP addresses
      *
@@ -28,50 +29,11 @@ public:
     std::vector<std::string> discover_peers(MetaInfo metaInfo);
 
     /**
-     * @brief creates a TCP connection with a peer
-     *
-     * @param metaInfo
-     * @param peer_ip
-     * @param peer_port
-     */
-    void create_connection(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
-
-    /**
-     * @brief sends a message to the peer over the TCP connection
-     *
-     * @param message
-     */
-    void send_message(std::vector<uint8_t> message);
-
-    /**
-     * @brief receives handshake message from the peer over the TCP connection
+     * @brief exchanges hanshake message with a peer and returns its id
      *
      * @return std::string
      */
-    std::string receive_handshake_message();
-
-    /**
-     * @brief receives a peer messageS over the TCP connection
-     *
-     * @return Message object
-     */
-    Message receive_peer_message();
-
-    // /**
-    //  * @brief creates a TCP connection with a peer and sends a handshake message.
-    //  *
-    //  * @param metaInfo
-    //  * @param peer_ip
-    //  * @param peer_port
-    //  */
-    // void do_handshake(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
-
-    /**
-     * @brief returns peer id
-     *
-     * @return std::string
-     */
-    std::string get_peer_id(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
+    std::string get_peer_id(MetaInfo metaInfo, Connection &peerConnection);
 
     /**
      * @brief initiates a connection with a peer to be ready for requesting pieces
@@ -79,16 +41,9 @@ public:
      * @param metaInfo
      * @param peer_ip
      * @param peer_port
+     * @return Connection object
      */
-    void connect_to_peer(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
-
-    /**
-     * @brief sends a request message and waits for a piece message for each block then returns all the blocks of a piece with the given index
-     *
-     * @param metaInfo
-     * @return std::vector<uint8_t>
-     */
-    std::vector<uint8_t> fetch_piece_blocks(MetaInfo metaInfo, size_t piece_index);
+    Connection connect_to_peer(MetaInfo metaInfo, std::string peer_ip, std::string peer_port);
 
     /**
      * @brief verifies the piece by comparing its hash with the expected hash
@@ -117,15 +72,18 @@ public:
     void download_piece(MetaInfo metaInfo, std::string output_file, size_t piece_index);
 
     /**
-     * @brief downloads the file from the peers
+     * @brief picks a piece from the work queue and downloads it from the peer
+     * @param metaInfo
+     * @param peer_ip
+     * @param peer_port
+     */
+    void worker(MetaInfo metaInfo, const std::string peer_ip, const std::string peer_port);
+
+    /**
+     * @brief downloads the entire file from available peers
      *
      * @param metaInfo
      * @param output_file
      */
     void download_file(MetaInfo metaInfo, std::string output_file);
-
-    /**
-     * @brief closes the TCP connection
-     */
-    void close_connection();
 };

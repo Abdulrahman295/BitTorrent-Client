@@ -11,6 +11,7 @@
 #include "bencode/encode.hpp"
 #include "metainfo/metainfo.hpp"
 #include "client/client.hpp"
+#include "client/connection.hpp"
 
 using json = nlohmann::json;
 
@@ -146,9 +147,9 @@ int handshake_command(int argc, char *argv[])
 
         MetaInfo metaInfo = MetaInfo(torrent_file);
         Client cli = Client();
-        std::string peerID = cli.get_peer_id(metaInfo, peer_ip, peer_port);
+        Connection peerConnection = Connection(peer_ip, peer_port);
+        std::string peerID = cli.get_peer_id(metaInfo, peerConnection);
         std::cout << "Peer ID: " << peerID << std::endl;
-        cli.close_connection();
     }
     catch (const std::exception &e)
     {
@@ -183,7 +184,6 @@ int download_piece_command(int argc, char *argv[])
         MetaInfo metaInfo = MetaInfo(torrent_file);
         Client cli = Client();
         cli.download_piece(metaInfo, output_file, piece_index);
-        cli.close_connection();
         std::cout << "Downloaded piece " << piece_index << " to " << output_file << std::endl;
     }
     catch (const std::exception &e)
@@ -218,7 +218,6 @@ int download_file_command(int argc, char *argv[])
         MetaInfo metaInfo = MetaInfo(torrent_file);
         Client cli = Client();
         cli.download_file(metaInfo, output_file);
-        cli.close_connection();
         std::cout << "Downloaded " << torrent_file << " to " << output_file << "." << std::endl;
     }
     catch (const std::exception &e)
