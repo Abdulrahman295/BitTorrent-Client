@@ -24,7 +24,7 @@
 
 - **BitTorrent Protocol**: Implements the BitTorrent protocol, allowing the client to connect to peers, perform handshakes, and exchange pieces of the file.
 
--  **Multi-threaded Downloading**: Supports downloading pieces from multiple peers simultaneously, optimizing the download speed and efficiency and reassembling them to form the complete file.
+-  **Multi-threaded Downloading**: Supports downloading pieces from multiple peers simultaneously, optimizing the download speed and efficiency.
 
 - **Piece Selection**: Allows downloading of specific pieces of a file.
 
